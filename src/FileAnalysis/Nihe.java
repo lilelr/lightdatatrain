@@ -51,13 +51,14 @@ public class Nihe {
 	{
 		
 	}
+
 	public  String regression()
 	{
-		ArrayList<String> data=this.array;
+		ArrayList<String> data=this.array;  //对应红绿灯id和时间段的数据集
 		if(data==null)
 			return "error,error";
-		lengthStore.clear();
-		timeStore.clear();
+		lengthStore.clear(); //ArrayList<Double>
+		timeStore.clear();   //ArrayList<Double>
 		for(String s : data)
 		{
 			String [] items=s.split(",");
@@ -66,8 +67,10 @@ public class Nihe {
 			lengthStore.add(length);
 			timeStore.add(time);
 		}
+
+
 		int counter=0;
-		arrayData.clear();
+		arrayData.clear();  //ArrayList<disandtime>
 		do{
 			counter++;
 //			int length=0;
@@ -86,6 +89,7 @@ public class Nihe {
 			d.state=0;
 			arrayData.add(d);
 		}
+
 //		int post=0;
     	for(int i=0;i<arrayData.size();i++)
     	{
@@ -97,6 +101,7 @@ public class Nihe {
 	    		y.add(arrayData.get(i).time);
     		}
     	}
+
     	double[] res = calculate(x, y);
     	if (res == null)
     		{
@@ -135,6 +140,8 @@ public class Nihe {
 		res[1] = b;
 		return res;
 	}
+
+
  	public boolean NiheBy10ResultJudge()
 	{
 		boolean state=false;

@@ -14,12 +14,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 public class preExcuete {
-	public static ArrayList<String> lightIdList=new ArrayList<String> ();
+	public static ArrayList<String> lightIdList=new ArrayList<String> (); //保存所有的红绿灯ID号
 	public static HashMap<String , ArrayList<String>> lightIdDataByDayHour=new HashMap<String,ArrayList<String>>();
+	//key 红绿灯ID+特征日+特征时间段 value 数据集
 	public static void main(String[] args)
 	{
-		getLightIdList("F:\\LightData\\A&BTraining\\lightData_mid");
-		DenoisingBy10Per("F:\\LightData\\A&BTraining\\lightData_mid", "F:\\LightData\\A&BTraining\\lightData_result");
+		getLightIdList("/Users/yuxiao/项目/毕设/文件/2016/lightData_mid");
+		DenoisingBy10Per("/Users/yuxiao/项目/毕设/文件/2016/lightData_mid", "/Users/yuxiao/项目/毕设/文件/2016/lightData_result/");
 	}
 	//获取该路劲中包含的所有红绿灯ID号
 	public static void getLightIdList(String input)
@@ -70,13 +71,13 @@ public class preExcuete {
 							//System.out.println(lightId);
 							BufferedReader reader = new BufferedReader(new FileReader(f2));
 							String line="";
-							while((line=reader.readLine())!=null)
+							while((line=reader.readLine())!=null) //读取数据一行
 							{
 								//System.out.println(line);
 								String []items = line.split(",");
-								String day=Util.getDay(items[1])+"";
-								String hour=Util.getHour(items[1])+"";
-								String key=lightId+"_"+day+"_"+hour;
+								String day=Util.getDay(items[1])+"";  //获取特征日
+								String hour=Util.getHour(items[1])+"";  //获取特征时间段
+								String key=lightId+"_"+day+"_"+hour; //红绿灯ID+特征日+特征时间段
 								//System.out.println(key+"       "+items[1]);
 								if(!lightIdDataByDayHour.containsKey(key))
 								{
@@ -95,30 +96,32 @@ public class preExcuete {
 						else continue;
 					}
 				}
+
+
 				int[] days = {0,1,2,5,6};
 				int[] hours = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
-				for(int day : days)
-					for(int hour : hours)
+				for(int day : days)  //遍历特征日
+					for(int hour : hours)  //遍历每个时间段
 					{
 						String key=lightId+"_"+day+"_"+hour;
-						ArrayList<String > array=lightIdDataByDayHour.get(key);
+						ArrayList<String> array=lightIdDataByDayHour.get(key);//获取对应红绿灯id和时间段的数据集
 						if(array == null)
 							continue;
-						Nihe nihe=new Nihe(array);
+						Nihe nihe=new Nihe(array); //拟合
 						String ABresult=nihe.regression();
 						if(ABresult.equals("error,error"))
 							continue;
 						double A=Double.parseDouble(ABresult.split(",")[0]);
 						double B=Double.parseDouble(ABresult.split(",")[1]);
 
-						String dirPath = output+"\\"+lightId+"\\"+day;
+						String dirPath = output+"/"+lightId+"/"+day;
 						File outFile=new File(dirPath);
 						if(!outFile.exists())
 							outFile.mkdirs();
-						File outputFile = new File(dirPath+"\\"+hour+".csv");
+						File outputFile = new File(dirPath+"/"+hour+".csv");
 						if(!outputFile.exists())
 							outputFile.createNewFile();
-						FileWriter fw = new FileWriter(outputFile);
+						FileWriter fw = new FileWriter(outputFile);  //文件读写指针
 						for( String s : array)
 						{
 							String[] items = s.split(",");
@@ -126,7 +129,7 @@ public class preExcuete {
 									+B) - Double.parseDouble(items[2].trim())); 
 							/////////////////TODO///////////////////////////////////
 							//是否去除噪点数据
-								String line="";
+								String line="";  //写入的每一行
 								line+=items[0]+","+items[1]+","+items[3]+","+items[2];
 								line+=","+(A * Double.parseDouble(items[3].trim()) +B);
 								line+=","+error+","+items[4]+","+items[5]+"\r\n";

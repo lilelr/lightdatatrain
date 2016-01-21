@@ -16,13 +16,15 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 
-
+/**
+ * 一个bus实例代表一辆公交车的数据集
+ */
 public class Bus {
 	
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss"); 
-	private String busID;
+	private String busID;  //
 	private ArrayList<Date> timeStamps;
-	private ArrayList<Double> diss; //涓や釜鐐圭殑璺濈
+	private ArrayList<Double> diss; //到路口距离的集合
 	private ArrayList<Double> disToStops;
 	
 	public Bus(String s) 
@@ -39,9 +41,9 @@ public class Bus {
 		Date timeStamp = null;
 		try {
 			timeStamp = sdf.parse(ss[5]);
-			if (lightSE == 'S') dis = Double.valueOf(ss[7]);
-			else dis = -Double.valueOf(ss[7]);
-			disToStop = Double.valueOf(ss[9]);
+			if (lightSE == 'S') dis = Double.valueOf(ss[7]); //S表示朝红绿灯正向
+			else dis = -Double.valueOf(ss[7]);  //距离为负，已过了红绿灯
+			disToStop = Double.valueOf(ss[9]);  //到下一站距离
 		} catch (ParseException e) {
 			return;
 		}
@@ -91,7 +93,7 @@ public class Bus {
 	}
 		
 	
-	public ArrayList<String> stopJudge1()
+	public ArrayList<String> stopJudge1() //停车算法
 	{
 		if(disToStops.size()==0)
 			return new ArrayList<String>();
@@ -160,6 +162,7 @@ public class Bus {
 			String timeStr = sdf.format(timeStamps.get(ss));
 			double time = (timeStamps.get(ts).getTime() - timeStamps.get(ss).getTime()) / 1000;
 			res.add(timeStr + "," + time + "," + disAvg + "," + busID + "," + stopTimes);
+            //中间结果每行数据 lightID,时间戳，通过红绿灯时间，离路口距离，公交车ID,停车次数
 			stopTimes++;
 		}
 		return res;
@@ -242,12 +245,18 @@ public class Bus {
 		return res;
 	}
 
+	/**
+	 *  进一步处理treemap中的数据
+	 * @param fw  fw 为数据文件读写指针
+	 * @param ts 有序key的treemap key 为公交车id+时间戳，value为为每一行数据ls,按key排序
+	 * @param lightID
+	 */
 	public static void process(FileWriter fw, TreeMap<String, String> ts, String lightID)
 	{
 		Bus bus = null;
 		for (String skey : ts.keySet())
 		{
-			String s = ts.get(skey);
+			String s = ts.get(skey); //获取每一行数据
 			if (bus == null) bus = new Bus(s);
 			else 
 			{
@@ -260,7 +269,7 @@ public class Bus {
 						} catch (IOException e) {
 							continue;
 						}
-					bus = new Bus(s);
+					bus = new Bus(s);  //初始化每一个bus实例
 				}
 			}
 		}
@@ -277,9 +286,16 @@ public class Bus {
 		}
 		
 	}
-	
 
-	public static void process(File zf, String outpath, Set<String> dateSet)
+
+	/**
+	 * 首先读取zip压缩文件中的数据
+	 * @param zf
+	 * @param outpath
+	 * @param dateSet
+	 */
+
+	public static void process(File zf, String outpath, Set<String> dateSet)  //解压读取数据
 	{
 		String filename = zf.getName();
 		if (!filename.endsWith(".zip")) return;
@@ -318,28 +334,30 @@ public class Bus {
 //				if(!lightID.equals("59566303622_59566302845_59566302320"))
 //					continue;
 //				System.out.println(lightID);
-				File fileout = new File(outpath + dateStr + "/" + lightID + ".csv");
+				File fileout = new File(outpath + dateStr + "/" + lightID + ".csv"); //中间输出结果文件路径
 				
-				fw = new FileWriter(fileout,true);
+				fw = new FileWriter(fileout,true);//中间输出结果文件读写指针
 			} catch (IOException e) {
 				e.printStackTrace();
 				continue;
 			}
 			BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 			String ls;
-			TreeMap<String, String> ts = new TreeMap<String, String>();
+			TreeMap<String, String> ts = new TreeMap<String, String>(); //有序key的treemap
+			//key 为公交车id+时间戳，value为为每一行数据ls,按key排序
 			try {
 				while ((ls = reader.readLine()) != null)
 				{
 					if (ls.contains("?")) continue;
 					String[] ss = ls.split(",");
-					ts.put(ss[2] + " " + ss[5], ls); 
+					ts.put(ss[2] + " " + ss[5], ls); //key 为公交车id+时间戳，value为为每一行数据ls
 				}
 			} catch (IOException e) {
 			}
 			
 			try {
 				reader.close();
+				//进一步处理treemap中的数据
 				process(fw, ts, lightID);
 				fw.close();
 			} catch (IOException e) {
