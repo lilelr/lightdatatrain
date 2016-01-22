@@ -11,7 +11,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
@@ -22,10 +21,10 @@ import java.util.zip.ZipEntry;
 public class Bus {
 	
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss"); 
-	private String busID;  //
-	private ArrayList<Date> timeStamps;
-	private ArrayList<Double> diss; //到路口距离的集合
-	private ArrayList<Double> disToStops;
+	private String busID;  //公交车号码
+	private ArrayList<Date> timeStamps;//时间戳集合
+	private ArrayList<Double> diss; //到路口距离的集合， 背离红绿灯，距离为负
+	private ArrayList<Double> disToStops; //到下一站距离集合
 	
 	public Bus(String s) 
 	{
@@ -72,7 +71,7 @@ public class Bus {
 		}
 		double dis = 0;
 		if (lightSE == 'S') dis = Double.valueOf(ss[7]);
-		else dis = -Double.valueOf(ss[7]);
+		else dis = -Double.valueOf(ss[7]); //背离红绿灯，距离为负
 		////////////////////////TODO/////////////////////
 //		if(dis<0)
 //			return true;
@@ -81,7 +80,7 @@ public class Bus {
 		if (!curBusID.equals(this.busID)) return false;
 		if (this.timeStamps.size() > 0 &&
 				Math.abs(this.timeStamps.get(this.timeStamps.size() - 1).getTime() 
-						- timeStamp.getTime()) > 5 * 60 * 1000) 
+						- timeStamp.getTime()) > 5 * 60 * 1000) //两个时间间隔大于5分钟则是两个不同的bus数据集
 			return false;
 		if (dis < disToStop)
 		{
@@ -91,8 +90,56 @@ public class Bus {
 		}
 		return true;
 	}
-		
-	
+
+    /**
+     * 两次停车判断及数据输出
+     */
+	public String[] judgesecondstop(){
+        if(this.diss.size()==0){ //没有数据，返回空
+            return null;
+        }
+
+        int len=this.disToStops.size();
+        int i=0;
+        int stopnums=0; //停车次数
+        double predisToStop=0;
+        Date pretimestamp;
+        boolean preStopFlag=false;
+
+        String[] stopdata={"","",""};  //记录停车数据，下标从0开始,初始为3个null
+        for(i=0;i<len && stopnums<=2;i++){
+            if (this.diss.get(i)<0) break;
+            if(i==0){
+                predisToStop=this.disToStops.get(i);
+                pretimestamp=this.timeStamps.get(i);
+                preStopFlag=false;
+                continue;
+            }else{
+
+                if( (predisToStop-this.disToStops.get(i)) <=10){
+                    if(preStopFlag==false){ //先前一次是否停车
+                        preStopFlag=true; //当前状态是已停车
+                        stopnums++;
+                        stopdata[stopnums-1]=(busID+","+sdf.format(this.timeStamps.get(i))+","+this.diss.get(i)
+                        +","+this.disToStops.get(i)+","+stopnums);
+                    }else{
+                    //之前已经是停车行为，意味着停车的GPS的数据至少有三条以上
+
+                        stopdata[stopnums-1]=(busID+","+sdf.format(this.timeStamps.get(i))+","+this.diss.get(i)
+                                +","+this.disToStops.get(i)+","+stopnums);
+                    }
+                }else{
+                    preStopFlag=false;
+                }
+            }
+
+            predisToStop=this.disToStops.get(i);
+            pretimestamp=this.timeStamps.get(i);
+        }
+        return stopdata;
+    }
+
+
 	public ArrayList<String> stopJudge1() //停车算法
 	{
 		if(disToStops.size()==0)
@@ -247,11 +294,12 @@ public class Bus {
 
 	/**
 	 *  进一步处理treemap中的数据
-	 * @param fw  fw 为数据文件读写指针
-	 * @param ts 有序key的treemap key 为公交车id+时间戳，value为为每一行数据ls,按key排序
-	 * @param lightID
-	 */
-	public static void process(FileWriter fw, TreeMap<String, String> ts, String lightID)
+     * @param stopfw
+     * @param fw  fw 为数据文件读写指针
+     * @param ts 有序key的treemap key 为公交车id+时间戳，value为为每一行数据ls,按key排序
+     * @param lightID
+     */
+	public static void process(FileWriter stopfw, FileWriter fw, TreeMap<String, String> ts, String lightID)
 	{
 		Bus bus = null;
 		for (String skey : ts.keySet())
@@ -262,14 +310,32 @@ public class Bus {
 			{
 				if (!bus.add(s))
 				{
+
 					ArrayList<String> stopDetail = bus.stopJudge1();
 					for (String stop : stopDetail)
 						try {
-							fw.write(lightID + "," + stop + "\n");
+							fw.write(lightID + "," + stop + "\n");  //每行数据输出
+
 						} catch (IOException e) {
 							continue;
 						}
-					bus = new Bus(s);  //初始化每一个bus实例
+
+                    //查找二次停车数据
+                    String[] stopdatastrs = bus.judgesecondstop();
+                    if(stopdatastrs!=null) {
+                        for (int i = 0; i < stopdatastrs.length; i++) {
+                            if (stopdatastrs[i]!=null && !stopdatastrs[i].isEmpty()) {
+                                try {
+//                                    System.out.println(stopfw.);
+                                    stopfw.write(lightID + "," + stopdatastrs[i] + "\n");  //每行停车数据输出
+                                } catch (IOException e) {
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+
+                    bus = new Bus(s);  //初始化每一个bus实例
 				}
 			}
 		}
@@ -291,19 +357,23 @@ public class Bus {
 	/**
 	 * 首先读取zip压缩文件中的数据
 	 * @param zf
-	 * @param outpath
+	 * @param outpath   Contant类中定义的中间数据文件输出路径
 	 * @param dateSet
 	 */
 
-	public static void process(File zf, String outpath, Set<String> dateSet)  //解压读取数据
+	public static void zipprocess(File zf, String outpath,String stopoutpath, Set<String> dateSet)  //解压读取数据
 	{
 		String filename = zf.getName();
 		if (!filename.endsWith(".zip")) return;
 		System.out.println(filename);
 		String dateStr = filename.substring(filename.indexOf('_') + 1, filename.indexOf('.'));
 		if (dateSet.contains(dateStr)) return;
-		else (new File(outpath + dateStr)).mkdirs();
+		else {
+            (new File(outpath + dateStr)).mkdirs();
+            (new File(stopoutpath + dateStr)).mkdirs(); //停车数据中间结果输出文件夹创建
+        }
 		FileWriter fw = null;
+        FileWriter stopfw=null;
 		ZipData zd = null;
 		try {
 			zd = new ZipData(zf.getAbsolutePath());
@@ -335,7 +405,8 @@ public class Bus {
 //					continue;
 //				System.out.println(lightID);
 				File fileout = new File(outpath + dateStr + "/" + lightID + ".csv"); //中间输出结果文件路径
-				
+				File stopFileOut=new File(stopoutpath+dateStr+"/" + lightID + ".csv"); //停车数据中间输出结果文件路径
+                stopfw= new FileWriter(stopFileOut,true);
 				fw = new FileWriter(fileout,true);//中间输出结果文件读写指针
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -358,7 +429,7 @@ public class Bus {
 			try {
 				reader.close();
 				//进一步处理treemap中的数据
-				process(fw, ts, lightID);
+				process(stopfw,fw, ts, lightID);
 				fw.close();
 			} catch (IOException e) {
 				continue;
@@ -432,7 +503,7 @@ public class Bus {
 				
 				try {
 					reader.close();
-					process(fw, ts, lightID);
+					process(fw, fw, ts, lightID);
 					
 				} catch (IOException e) {
 					continue;

@@ -2,13 +2,8 @@ package StopJudge;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.TreeMap;
 
 
@@ -25,6 +20,7 @@ public class Main {
 	{
 		String input = Constant.TrafficLightDataBak;
 		String midpath = Constant.TrafficLightMidPath;
+		String mid_stoppath = Constant.TrafficLightMidStopPath;
 		File outfile = new File(midpath);
 		Set<String> dateSet = getDate(outfile);
 		for (String s : dateSet) System.out.println(s);
@@ -33,7 +29,7 @@ public class Main {
 		String[] filename = infile.list();
 		for (int ic = 0; ic < filename.length; ic++)
 		{
-			Bus.process(files[ic], midpath, dateSet);
+			Bus.zipprocess( files[ic], midpath,mid_stoppath, dateSet);
 		}	
 	}
 	
