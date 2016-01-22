@@ -103,10 +103,13 @@ public class Bus {
         int i=0;
         int stopnums=0; //停车次数
         double predisToStop=0;
-        Date pretimestamp;
+        Date pretimestamp=null;
         boolean preStopFlag=false;
 
         String[] stopdata={"","",""};  //记录停车数据，下标从0开始,初始为3个null
+        long timeinterval=0;
+        long firststoptime=0;
+        long secondstoptime=0;
         for(i=0;i<len && stopnums<=2;i++){
             if (this.diss.get(i)<0) break;
             if(i==0){
@@ -115,18 +118,40 @@ public class Bus {
                 preStopFlag=false;
                 continue;
             }else{
-
+                long tempinterval=0;
                 if( (predisToStop-this.disToStops.get(i)) <=10){
                     if(preStopFlag==false){ //先前一次是否停车
                         preStopFlag=true; //当前状态是已停车
                         stopnums++;
-                        stopdata[stopnums-1]=(busID+","+sdf.format(this.timeStamps.get(i))+","+this.diss.get(i)
-                        +","+this.disToStops.get(i)+","+stopnums);
+                        if(stopnums==1){
+                            firststoptime=this.timeStamps.get(i).getTime();
+                        }
+                        if(stopnums==2){
+                            secondstoptime=this.timeStamps.get(i).getTime();
+                            timeinterval = (secondstoptime - firststoptime) / 1000;
+                            stopdata[stopnums-1]=(busID+","+sdf.format(this.timeStamps.get(i))+","+this.diss.get(i)
+                                    +","+this.disToStops.get(i)+","+stopnums+","+timeinterval);
+
+                        }
+
                     }else{
                     //之前已经是停车行为，意味着停车的GPS的数据至少有三条以上
+//                        tempinterval = (this.timeStamps.get(i).getTime() - pretimestamp.getTime()) / 1000;
+//                        timeinterval+=tempinterval; //计算时间差
+//                        System.out.println("秒"+timeinterval);
+                        if(stopnums==1){
+                            firststoptime=this.timeStamps.get(i).getTime();
+                        }
+                        if(stopnums==2){
+                            secondstoptime=this.timeStamps.get(i).getTime();
+                            timeinterval = (secondstoptime - firststoptime) / 1000;
+                            stopdata[stopnums-1]=(busID+","+sdf.format(this.timeStamps.get(i))+","+this.diss.get(i)
+                                    +","+this.disToStops.get(i)+","+stopnums+","+timeinterval);
 
+                        }
+                                               System.out.println("秒"+timeinterval);
                         stopdata[stopnums-1]=(busID+","+sdf.format(this.timeStamps.get(i))+","+this.diss.get(i)
-                                +","+this.disToStops.get(i)+","+stopnums);
+                                +","+this.disToStops.get(i)+","+stopnums+","+timeinterval);
                     }
                 }else{
                     preStopFlag=false;
@@ -326,7 +351,6 @@ public class Bus {
                         for (int i = 0; i < stopdatastrs.length; i++) {
                             if (stopdatastrs[i]!=null && !stopdatastrs[i].isEmpty()) {
                                 try {
-//                                    System.out.println(stopfw.);
                                     stopfw.write(lightID + "," + stopdatastrs[i] + "\n");  //每行停车数据输出
                                 } catch (IOException e) {
                                     continue;
@@ -365,7 +389,7 @@ public class Bus {
 	{
 		String filename = zf.getName();
 		if (!filename.endsWith(".zip")) return;
-		System.out.println(filename);
+//		System.out.println(filename); //输出数据压缩包文件名
 		String dateStr = filename.substring(filename.indexOf('_') + 1, filename.indexOf('.'));
 		if (dateSet.contains(dateStr)) return;
 		else {
