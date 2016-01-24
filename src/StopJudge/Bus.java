@@ -112,8 +112,13 @@ public class Bus {
         long secondstoptime=0;
         String stopfirststr="";
         String stopsecondestr="";
+        int probalitysize=len; //probalitysize 记录除"E"外，一共有多少条数据
+        int secondstopsize=0;//记录二次停车的数据的次数
         for(i=0;i<len && stopnums<=2;i++){
-            if (this.diss.get(i)<0) break;
+            if (this.diss.get(i)<0) {
+                probalitysize=i;
+                break;
+            }
             if(i==0){
                 predisToStop=this.disToStops.get(i);
                 pretimestamp=this.timeStamps.get(i);
@@ -131,6 +136,7 @@ public class Bus {
                                     +","+this.disToStops.get(i)+","+stopnums+","+timeinterval);
                         }
                         if(stopnums==2){
+                            secondstopsize++;
                             secondstoptime=this.timeStamps.get(i).getTime();
                             timeinterval = (secondstoptime - firststoptime) / 1000;
                             stopsecondestr=(busID+","+sdf.format(this.timeStamps.get(i))+","+this.diss.get(i)
@@ -148,6 +154,7 @@ public class Bus {
                                     +","+this.disToStops.get(i)+","+stopnums+","+timeinterval);
                         }
                         if(stopnums==2){
+                            secondstopsize++;
                             secondstoptime=this.timeStamps.get(i).getTime();
                             timeinterval = (secondstoptime - firststoptime) / 1000;
                             stopsecondestr=(busID+","+sdf.format(this.timeStamps.get(i))+","+this.diss.get(i)
@@ -165,9 +172,12 @@ public class Bus {
             predisToStop=this.disToStops.get(i);
             pretimestamp=this.timeStamps.get(i);
         }
-        stopdata[0]=stopfirststr;
-        stopdata[1]=stopsecondestr;
-        if(stopsecondestr.isEmpty()) return null; //测试，过滤数据，只保留有两次停车行为的数据
+        stopdata[0]=stopfirststr+","+(0);
+        if(stopsecondestr.isEmpty()){
+            return null; //测试，过滤数据，只保留有两次停车行为的数据
+        }else{
+            stopdata[1]=stopsecondestr+","+(double)((double)secondstopsize/(double)probalitysize);
+        }
         return stopdata;
     }
 
@@ -370,6 +380,7 @@ public class Bus {
 				}
 			}
 		}
+
 		if (bus != null)
 		{
 			ArrayList<String> stopDetail = bus.stopJudge1();

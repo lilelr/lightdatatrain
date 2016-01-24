@@ -19,8 +19,8 @@ public class preExcuete {
 	//key 红绿灯ID+特征日+特征时间段 value 数据集
 	public static void main(String[] args)
 	{
-		getLightIdList("/Users/yuxiao/项目/毕设/文件/2016/lightData_mid");
-		DenoisingBy10Per("/Users/yuxiao/项目/毕设/文件/2016/lightData_mid", "/Users/yuxiao/项目/毕设/文件/2016/lightData_result/");
+		getLightIdList("/Users/yuxiao/项目/毕设/文件/2016/lightData_mid/");
+		DenoisingBy10Per("/Users/yuxiao/项目/毕设/文件/2016/lightData_mid/", "/Users/yuxiao/项目/毕设/文件/2016/lightData_result/");
 	}
 	//获取该路劲中包含的所有红绿灯ID号
 	public static void getLightIdList(String input)
@@ -107,7 +107,7 @@ public class preExcuete {
 						ArrayList<String> array=lightIdDataByDayHour.get(key);//获取对应红绿灯id和时间段的数据集
 						if(array == null)
 							continue;
-						Nihe nihe=new Nihe(array); //拟合
+						Nihe nihe=new Nihe(array); //一次线性拟合
 						String ABresult=nihe.regression();
 						if(ABresult.equals("error,error"))
 							continue;
@@ -131,7 +131,7 @@ public class preExcuete {
 							//是否去除噪点数据
 								String line="";  //写入的每一行
 								line+=items[0]+","+items[1]+","+items[3]+","+items[2];
-								line+=","+(A * Double.parseDouble(items[3].trim()) +B);
+								line+=","+(A * Double.parseDouble(items[3].trim()) +B); //加上线性拟合值
 								line+=","+error+","+items[4]+","+items[5]+"\r\n";
 								fw.write(line);
 								fw.flush();
