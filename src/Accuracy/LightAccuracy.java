@@ -22,9 +22,9 @@ public class LightAccuracy {
 	public static void main(String[] args)
 	{
 //		getresultOfLeast("/Users/yuxiao/项目/毕设/文件/2016/four_result/resultOfLeast/");
-        getresultOfLeast("/Users/yuxiao/项目/毕设/resultOfLeast/");
+        getresultOfLeast(Constant.ResultOfLeast);
 		System.out.println("Catch A and B ready!");
-		AccuracyOfAllDays(Constant.TrafficLightMidPath, "/Users/yuxiao/项目/毕设/文件/2016/AllDaysAccuracy.csv");
+		AccuracyOfAllDays(Constant.TrafficLightMidPath, Constant.AllDaysAccuracyCSV);
         System.out.println("end");
 
 	}

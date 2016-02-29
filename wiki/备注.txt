@@ -1,0 +1,30 @@
+表头：
+线路号，上下行，经度，维度，GPS时间戳，S/E，停车点距红绿灯距离
+
+数据结果分特征日（0，1，2，5，6）以及特征时间段（0-23）
+表头：
+ lightData_result 红绿灯ID，GPS时间戳，排队距离，实际等灯时间，模型预测等灯时间，误差，车辆号，停车次数
+
+lightData_mid     //中间结果每行数据 lightID,时间戳，通过红绿灯时间，离路口距离，公交车ID,停车次数
+
+程序操作：
+（1）StopJudge包下Main文件，计算灯前停车行为
+（2）FileAn...包下preExcuete，拟合模型参数，计算，追加，输出
+面向饱和交通流的信号灯延误模型的改进研究
+
+StopJudge包，里面main 文件， 里面主程序main，里面有三个函数
+1：main1()   抽取红绿灯前数据
+2：main2()  计算停车行为
+3： main3() 训练4张表
+
+
+mid数据里面停车数据太少而得不到准确度
+旧数据生成四张表resultOfLeast （数据->midData->resultOfLeast）
+然后用新数据训练产生midData, 再用resultOfLeast 来计算准确度 Accuracy
+
+程序说明：
+
+1 StopJudge.Main  main2()  计算停车行为  根据源数据lightdata生成中间处理结果lightData_mid
+2 Accuracy.Main   main3() 训练4张表和得到resultOfLeast
+3 LightAccuracy.java 利用resultOfLeast 旧数据得到的四张表和新数据生成的midData来计算准确度得到AllDaysAcuracy.csv输出
+4 AllDaysAcuracy.csv 红绿灯号 数据文件个数 准确度

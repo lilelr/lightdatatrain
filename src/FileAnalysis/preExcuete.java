@@ -22,7 +22,7 @@ public class preExcuete {
 		getLightIdList("/Users/yuxiao/项目/毕设/文件/2016/lightData_mid/");
 		DenoisingBy10Per("/Users/yuxiao/项目/毕设/文件/2016/lightData_mid/", "/Users/yuxiao/项目/毕设/文件/2016/lightData_result/");
 	}
-	//获取该路劲中包含的所有红绿灯ID号
+	//获取该路径中包含的所有红绿灯ID号
 	public static void getLightIdList(String input)
 	{
 		File file1=new File(input);

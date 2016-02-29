@@ -11,11 +11,21 @@ import java.util.TreeMap;
 public class Main {
 	
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+
+	/**
+	 *      * 根据源数据lightdata生成中间处理结果lightData_mid
+	 main2()  计算停车行为
+	 * @param args
+	 */
 	public static void main(String[] args)
 	{
+
 		main2();
 	}
-	
+
+    /**
+     * 根据源数据lightdata生成中间处理结果lightData_mid
+     */
 	public static void main2()// jisuan honglvdeng fujing de tingche xingwei
 	{
 		String input = Constant.TrafficLightDataBak;

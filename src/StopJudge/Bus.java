@@ -352,6 +352,7 @@ public class Bus {
 			{
 				if (!bus.add(s))
 				{
+                    //停车行为判断
 
 					ArrayList<String> stopDetail = bus.stopJudge1();
 					for (String stop : stopDetail)
@@ -383,6 +384,7 @@ public class Bus {
 
 		if (bus != null)
 		{
+            //停车行为判断
 			ArrayList<String> stopDetail = bus.stopJudge1();
 			for (String stop : stopDetail)
 				try {
@@ -479,7 +481,7 @@ public class Bus {
 		}
 	}
 	
-	public static void main(String[] args)
+	public static void main(String[] args) //备份
 	{
 //		main3("D:/TrafficLightData/TrafficLightDataBACKUP/","D:/TrafficLightData/mid2/");
 	}
