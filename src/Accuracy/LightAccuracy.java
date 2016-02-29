@@ -18,7 +18,11 @@ import FileAnalysis.Util;
 import StopJudge.Constant;
 
 public class LightAccuracy {
+	/**
+	 * key:lightid+特征日+时间段，value:(a,b)
+	 */
 	public static HashMap<String , String> resultLeast = null;
+
 	public static void main(String[] args)
 	{
 //		getresultOfLeast("/Users/yuxiao/项目/毕设/文件/2016/four_result/resultOfLeast/");
@@ -66,10 +70,17 @@ public class LightAccuracy {
 
 
 	//增加数据天数
+
+	/**
+	 * AccuracyOfAllDays(Constant.TrafficLightMidPath, Constant.AllDaysAccuracyCSV);
+	 * @param input
+	 * @param output
+	 */
 	public static void AccuracyOfAllDays(String input,String output)
 	{
 		try{
-			HashMap<String, ArrayList<File>> map = new HashMap<String,ArrayList<File>>(); //key为lightId,value 为这个路口的数据集合
+			//key为lightId,value 为这个路口的数据集合
+			HashMap<String, ArrayList<File>> map = new HashMap<String,ArrayList<File>>();
 			File file1 = new File(input);
 			if(!file1.exists())
 			{
@@ -149,15 +160,17 @@ public class LightAccuracy {
 								continue;
 							double A = Double.parseDouble(result.split(",")[0]);
 							double B = Double.parseDouble(result.split(",")[1]);
+							//items[2] 真实停车时间
 							double error = Math.abs((Double.parseDouble(items[3]) * A + B) - Double.parseDouble(items[2]));
 							count++;
-							double tempRate = 0;
+							double tempRate = 0;//一个公交车数据文件计算出的准确度
 							if((Math.abs((Double.parseDouble(items[3]) * A + B) - Double.parseDouble(items[2]))) <= 1)
 							{
 								tempRate = 1;
 							}
 							else
 							{
+								//准确度计算公式  items[3] 到路口距离
 								tempRate = 1 - (Math.abs((Double.parseDouble(items[3]) * A + B) - Double.parseDouble(items[2])) / Double.parseDouble(items[2]));
 							}
 								if(tempRate < 0)
@@ -176,7 +189,7 @@ public class LightAccuracy {
 					double rate = counter1 * 1.00000 / count;
 					String line2 = "";
 //					line2 += lightId+","+counter1+","+count+","+rate+","+totalRate / count;
-					line2 += keyID+","+count+","+totalRate / count;
+					line2 += keyID+","+count+","+totalRate / count; //平均准确度
 					fw.write(line2+"\r\n");
 					fw.flush();
 				}

@@ -132,6 +132,7 @@ public class Bus {
                         stopnums++;
                         if(stopnums==1){
                             firststoptime=this.timeStamps.get(i).getTime();
+							//输出数据格式： 红绿灯号，公交车ID,到红绿灯距离，到下一站距离，停车次数，两次停车间隔
                             stopfirststr=(busID+","+sdf.format(this.timeStamps.get(i))+","+this.diss.get(i)
                                     +","+this.disToStops.get(i)+","+stopnums+","+timeinterval);
                         }
@@ -336,7 +337,7 @@ public class Bus {
 
 	/**
 	 *  进一步处理treemap中的数据
-     * @param stopfw
+     * @param stopfw  自己添加的二次停车判断及统计
      * @param fw  fw 为数据文件读写指针
      * @param ts 有序key的treemap key 为公交车id+时间戳，value为为每一行数据ls,按key排序
      * @param lightID

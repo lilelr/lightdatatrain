@@ -28,8 +28,8 @@ public class Regression {
 	public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 	
 	private ArrayList<disandtime> arrayData=new ArrayList<disandtime>();
-	private HashMap<String, ArrayList<Double>> lengthStore = null;
-	private HashMap<String, ArrayList<Double>> timeStore = null;
+	private HashMap<String, ArrayList<Double>> lengthStore = null; //key: 特征日+时间段， value:到路口距离
+	private HashMap<String, ArrayList<Double>> timeStore = null; //key:特征日+时间段， value:到路口时间
 
 	private String lightID = null;
 	private double maxLength = 0;
@@ -46,7 +46,12 @@ public class Regression {
 		timeStore = new HashMap<String, ArrayList<Double>>(125);
 		meantime = new HashMap<String, double[]>(125);
 	}
-	
+
+    /**
+     * 计算特征日+时间段
+     * @param s 时间戳
+     * @return  特征日，时间段
+     */
 	private String getTZR(String s)
 	{
 		Calendar cal = Calendar.getInstance();
@@ -72,7 +77,7 @@ public class Regression {
 
 	public void add(String timeStamp, String st, String sl)
 	{
-		String tzr = getTZR(timeStamp);  //特征日+时间段
+		String tzr = getTZR(timeStamp);  //特征日,时间段
 		if (tzr == null) return;
 		double t = Double.parseDouble(st);
 		double l = Double.parseDouble(sl);
@@ -162,7 +167,12 @@ public class Regression {
 //			error.add(Math.abs(lens.get(i) * a + b - times.get(i)));
 //		return a + "," + b;
 //	}
-	
+
+    /**
+     *
+     * @param tzr
+     * @return  A,B
+     */
 	private String regression(String tzr)
 	{
 		int counter=0;
@@ -317,7 +327,8 @@ public class Regression {
 		}
 		return state;
 	}
-	
+
+	//result of Least 输出
 	public void leastOutput(String path)
 	{
 		FileWriter fw = null, tfw = null;
@@ -328,10 +339,10 @@ public class Regression {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		for (String s : lengthStore.keySet())
+		for (String s : lengthStore.keySet())  //s:432 特征日，时间段   res: a,b
 		{
 			try {
-				String res = regression(s);
+				String res = regression(s); //res: A,B
 				fw.write(s + "," + res + "\n");
 //				tfw.write(s + "," + res + "\n");
 			} catch (IOException e) {
@@ -424,13 +435,13 @@ public class Regression {
 			e.printStackTrace();
 		}
 	}
-	public static void main(String[] args)
-	{
-//		String output = Constant.TrafficLightResultPath + 20150812 + "/";
-//		String copyPath = "E:/Traffic/";
-//		copy(output, copyPath);
-		main3("20150817");
-	}
+//	public static void main(String[] args)
+//	{
+////		String output = Constant.TrafficLightResultPath + 20150812 + "/";
+////		String copyPath = "E:/Traffic/";
+////		copy(output, copyPath);
+//		main3("20150817");
+//	}
 	
 	public static void main3(String dateStr)//xun lian honglvdeng d huigui canshu paidujuli,pingjun tingche shijian
 	{

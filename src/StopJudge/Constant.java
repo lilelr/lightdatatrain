@@ -19,5 +19,6 @@ public class Constant {
     public static String midPathForError = "/Users/yuxiao/项目/毕设/文件/2016/new/midPathForError.csv";
     public static String ResultOfLeast="/Users/yuxiao/项目/毕设/文件/2016/four_result/20160229/resultOfLeast/";
     public static String AllDaysAccuracyCSV="/Users/yuxiao/项目/毕设/文件/2016/AllDaysAccuracy.csv";
-
+    public static String StopMidDataPath="/Users/yuxiao/项目/毕设/文件/2016/lightData_midstop";
+    public static String SecondStopDataPath="/Users/yuxiao/项目/毕设/文件/2016/secondStopPTData.csv";
 }
