@@ -15,7 +15,9 @@ import java.util.HashMap;
 public class CaculatePT {
 
     public static void main(String[] args){
+
         statistic(Constant.StopMidDataPath,Constant.SecondStopDataPath);
+        System.out.println("SecondStopData Success");
     }
 
 
@@ -59,6 +61,8 @@ public class CaculatePT {
                     while((line=reader.readLine())!=null){
                         //region lightIDRecordMap 添加数据
                         String[] lineItems=line.split(",");
+                        if(lineItems.length<=2) continue; //异常数据，忽略
+//                        System.out.println(lineItems[2]);
                         String tzrInfo=getTZR(lineItems[2]); //获取特征日+时间段信息
                         if(tzrInfo==null) continue;
 
@@ -69,24 +73,25 @@ public class CaculatePT {
                         lightIDRecordMap.get(tempkey).add(line);
                         //endregion
                     }
-
+                    reader.close();
                 }catch (IOException e){
                         e.printStackTrace();
                 }
             }
-
+            //对lightIDRecordMap的数据计算处理，并输出
+            sumupPT(outPath,lightIDRecordMap);
+            lightIDRecordMap.clear();
         }
         //endregion
 
-        //对lightIDRecordMap的数据计算处理，并输出
-        sumupPT(outPath,lightIDRecordMap);
+
     }
 
 
     private static  void sumupPT(String outputPath,HashMap<String,ArrayList<String>> lightIDData)  {
-        FileWriter fileWriter=null;
+
         try {
-             fileWriter=new FileWriter(outputPath);
+            FileWriter fileWriter=new FileWriter(outputPath,true);
 
             for(String key: lightIDData.keySet()){
                 ArrayList<String> lDD=lightIDData.get(key);
@@ -96,6 +101,7 @@ public class CaculatePT {
 
                 for(String line:lDD){
                     String[] lineItems=line.split(",");
+                    if(lineItems.length<=7) continue;//异常数据，忽略
                     if(lineItems[5].equals("1")){
                         sumToCrossingDis+=Double.parseDouble(lineItems[3]);
                         count++;
@@ -110,7 +116,10 @@ public class CaculatePT {
                 double avgToCrossingDis=sumToCrossingDis/count;
                 double avgTimeInterval=(double)sumTimeInterval/(double)count;
                 String outPutLine= key+","+avgToCrossingDis+","+avgTimeInterval;
-                fileWriter.write(outPutLine+"\n");
+                if(avgToCrossingDis == 0 || avgTimeInterval ==0)
+                    continue;
+                fileWriter.append(outPutLine + "\n");
+
             }
             fileWriter.close();
         } catch (IOException e) {
@@ -127,6 +136,7 @@ public class CaculatePT {
      */
     private static String getTZR(String s)
     {
+
         Calendar cal = Calendar.getInstance();
         try {
             Date d = sdf.parse(s);

@@ -5,8 +5,11 @@
 表头：
  lightData_result 红绿灯ID，GPS时间戳，排队距离，实际等灯时间，模型预测等灯时间，误差，车辆号，停车次数
 
-lightData_mid     //中间结果每行数据 lightID,时间戳，通过红绿灯时间，离路口距离，公交车ID,停车次数
+lightData_mid     //中间结果每行数据 lightID,时间戳，2通过红绿灯时间，3离路口距离，4公交车ID,5停车次数
 
+lightStopmid 	//输出数据格式： 0红绿灯号，1公交车ID,2时间戳，3到红绿灯距离，4到下一站距离，5停车次数，6两次停车间隔，7二次停车占总数据（记录除"E"外，一共有多少条数据）的比例
+
+resultOfLeast 表文件名红绿灯号 格式 特征日、时间段、a、b   (自定义添加距离标志P,修正时间间隔t)
 程序操作：
 （1）StopJudge包下Main文件，计算灯前停车行为
 （2）FileAn...包下preExcuete，拟合模型参数，计算，追加，输出
@@ -27,5 +30,8 @@ StopJudge.Constant 项目文件路径说明
 
 1 StopJudge.Main  main2()  计算停车行为  根据源数据lightdata生成中间处理结果lightData_mid
 2 Accuracy.Main   main3() 训练4张表和得到resultOfLeast
-3 LightAccuracy.java 利用resultOfLeast 旧数据得到的四张表和新数据生成的midData来计算准确度得到AllDaysAcuracy.csv输出
-4 AllDaysAcuracy.csv 红绿灯号 数据文件个数 准确度
+3 StopJudge.CaculatePT main   训练lightmidStop_data 数据得到距离标志表 secondStopPTData.csv
+4 LightAccuracy.java main 利用resultOfLeast 旧数据得到的四张表和新数据生成的midData来计算准确度得到AllDaysAcuracy.csv输出
+5 AllDaysAcuracy.csv 红绿灯号 数据文件个数 准确度
+
+20151218 以后的数据格式有误  有很多灯口号之前没有

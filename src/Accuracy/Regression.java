@@ -470,6 +470,7 @@ public class Regression {
 			for (File lt : lights)  //遍历每天的每个灯的数据csv文件，完成set的初始化
 			{
 				String light = lt.getName();
+				System.out.println("light"+light);
 				light = light.substring(0, light.indexOf('.'));
 				if (!set.containsKey(light)) set.put(light, new ArrayList<File>(90));
 				set.get(light).add(lt);
