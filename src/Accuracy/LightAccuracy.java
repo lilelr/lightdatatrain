@@ -9,10 +9,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import FileAnalysis.Util;
 import StopJudge.Constant;
@@ -30,8 +27,10 @@ public class LightAccuracy {
         getresultOfLeast(Constant.ResultOfLeast);
         getSecondDataMap(Constant.SecondStopDataPath);
         System.out.println("Catch A and B ready!");
-        AccuracyOfAllDays(Constant.TestlightData_mid, Constant.AllDaysAccuracyCSV);
-        PTAccuracyOfAllDays(Constant.TestlightData_mid, Constant.TestAllDaysAccuracyCSV);
+
+        HashMap<String,String> acurracyImproMap = new HashMap<>();
+        AccuracyOfAllDays(Constant.TestlightData_mid, Constant.AllDaysAccuracyCSV,acurracyImproMap);
+        PTAccuracyOfAllDays(Constant.TestlightData_mid, Constant.TestAllDaysAccuracyCSV,acurracyImproMap);
         System.out.println("end");
 
     }
@@ -90,8 +89,10 @@ public class LightAccuracy {
      * @param input
      * @param output
      */
-    public static void AccuracyOfAllDays(String input, String output) {
+    public static void AccuracyOfAllDays(String input, String output,HashMap<String,String> accuracyImpMap) {
         try {
+            File originTestCSV = new File("/Users/yuxiao/项目/毕设/文件/2016/测试/originTest.csv");
+            FileWriter originTestWriter = new FileWriter(originTestCSV);
             //key为lightId,value 为这个路口的数据集合
             HashMap<String, ArrayList<File>> map = new HashMap<String, ArrayList<File>>();
             File file1 = new File(input);
@@ -100,6 +101,7 @@ public class LightAccuracy {
                 return;
             } else {
                 if (file1.isDirectory()) {
+
                     File[] files1 = file1.listFiles(); //读取每一天的文件夹
                     for (File file2 : files1) {
                         File[] files2 = file2.listFiles();//每一天的红绿灯路口数据集
@@ -112,6 +114,7 @@ public class LightAccuracy {
                                 ArrayList<File> fileMap = new ArrayList<File>();
                                 fileMap.add(file3);
                                 map.put(lightId, fileMap);
+                                int a;
                             }
                         }
                     }
@@ -151,6 +154,7 @@ public class LightAccuracy {
 //							continue;
 //						}
                         else {  //只对有停车的数据计算准确率
+                            double forcastDelayTime =0;  // 预测公交车停车延误时间
                             String time = items[1].trim();
                             int day = Util.getDay(time);
                             int hour = Util.getHour(time);
@@ -170,7 +174,14 @@ public class LightAccuracy {
                                 tempRate = 1;
                             } else {
                                 //准确度计算公式  items[3] 到路口距离
+                                forcastDelayTime = Double.parseDouble(items[3]) * A + B;
                                 tempRate = 1 - (Math.abs((Double.parseDouble(items[3]) * A + B) - Double.parseDouble(items[2])) / Double.parseDouble(items[2]));
+                                if(tempRate >0){
+                                    // 原有系统的预测结果放入到对比性测试的map中,以待测试准确度的提高
+                                    accuracyImpMap.put(key+","+items[2],tempRate+","+forcastDelayTime);
+                                }
+                                String outputEachLine = key+","+items[2]+","+items[3]+","+tempRate+","+forcastDelayTime;
+                                originTestWriter.write(outputEachLine+"\n");
                             }
                             if (tempRate < 0) {
                                 totalRate += 0;
@@ -193,6 +204,7 @@ public class LightAccuracy {
                 fw.write(line2 + "\r\n");
                 fw.flush();
             }
+            originTestWriter.close();
 
             fw.close();
         } catch (Exception e) {
@@ -207,8 +219,15 @@ public class LightAccuracy {
      * @param input
      * @param output
      */
-    public static void PTAccuracyOfAllDays(String input, String output) {
+    public static void PTAccuracyOfAllDays(String input, String output,HashMap<String,String> accuracyImpMap) {
+
+
+
         try {
+            FileWriter compareTestCSV = new FileWriter("/Users/yuxiao/项目/毕设/文件/2016/测试/CompareTest.csv");
+            File pTTestCSV = new File("/Users/yuxiao/项目/毕设/文件/2016/测试/PTtest.csv");
+            FileWriter ptTestWriter = new FileWriter(pTTestCSV);
+
             //key为lightId,value 为这个路口的数据集合
             HashMap<String, ArrayList<File>> map = new HashMap<String, ArrayList<File>>();
             File file1 = new File(input);
@@ -286,23 +305,41 @@ public class LightAccuracy {
                             if ((Math.abs((Double.parseDouble(items[3]) * A + B) - Double.parseDouble(items[2]))) <= 1) {
                                 tempRate = 1;
                             } else {
+                                double forcastDelayTime =0;  // 预测公交车停车延误时间
+
                                 if (secondStopMap.containsKey(key)) {
                                     double toCrossingDis = Double.parseDouble(items[3]);
                                     String[] pTValues = secondStopMap.get(key).split("_");
                                     double pDis = Double.parseDouble(pTValues[0]);
                                     double tTime = Double.parseDouble(pTValues[1]);
-
                                     if (toCrossingDis >= pDis) {
+                                        // 大于距离标志
                                         //准确度计算公式  items[3] 到路口距离
+                                        forcastDelayTime=tTime + Double.parseDouble(items[3]) * A + B;
                                         tempRate = 1 - (Math.abs(tTime + (Double.parseDouble(items[3]) * A + B) - Double.parseDouble(items[2])) / Double.parseDouble(items[2]));
+
                                     } else {
                                         //准确度计算公式  items[3] 到路口距离
+                                        forcastDelayTime=Double.parseDouble(items[3]) * A + B;
                                         tempRate = 1 - (Math.abs((Double.parseDouble(items[3]) * A + B) - Double.parseDouble(items[2])) / Double.parseDouble(items[2]));
+                                    }
+                                    String tmpKey = key+","+items[2];
+                                    if(accuracyImpMap.containsKey(tmpKey)){
+                                        // 拥有相同的红绿灯号和停车时间,准确度提高的提取到结果map中 红绿灯号时间段,实际停车延误,原有系统预测延误,改进后系统预测延误
+                                        String originRateAndDelay = accuracyImpMap.get(tmpKey);
+                                        String[] originRateAndDelayItem = originRateAndDelay.split(",");
+                                        if (tempRate > Double.valueOf(originRateAndDelayItem[0])){
+                                            accuracyImpMap.replace(tmpKey,originRateAndDelayItem[1]+","+forcastDelayTime);
+                                        }
                                     }
                                 } else {
                                     //准确度计算公式  items[3] 到路口距离
+                                    forcastDelayTime=Double.parseDouble(items[3]) * A + B;
                                     tempRate = 1 - (Math.abs((Double.parseDouble(items[3]) * A + B) - Double.parseDouble(items[2])) / Double.parseDouble(items[2]));
                                 }
+
+                                String outputEachLine = key+","+items[2]+","+items[3]+","+tempRate+","+forcastDelayTime;
+                                ptTestWriter.write(outputEachLine+"\n");
 
                             }
                             if (tempRate < 0) {
@@ -327,8 +364,13 @@ public class LightAccuracy {
                 fw.write(line2 + "\r\n");
                 fw.flush();
             }
-
+            ptTestWriter.close();
             fw.close();
+
+            for(Map.Entry<String,String> entry: accuracyImpMap.entrySet()){
+                compareTestCSV.write(entry.getKey()+","+entry.getValue()+"\n");
+            }
+            compareTestCSV.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

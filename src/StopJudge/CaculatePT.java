@@ -29,7 +29,7 @@ public class CaculatePT {
 
     public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 
-
+    // 统计距离标志
     public static void statistic(String inputPath,String outPath)  {
 
         File inputFile=new File(inputPath);
@@ -93,7 +93,7 @@ public class CaculatePT {
 
     }
 
-
+    //计算距离标志并输出到文件中
     private static  void sumupPT(String outputPath,HashMap<String,ArrayList<String>> lightIDData)  {
 
         try {
@@ -121,6 +121,7 @@ public class CaculatePT {
                 }
                 double avgToCrossingDis=sumToCrossingDis/count;
                 double avgTimeInterval=(double)sumTimeInterval/(double)count;
+                // 到信号灯停止线的距离（距离标志值） + 两次停车间平均间隔
                 String outPutLine= key+","+avgToCrossingDis+","+avgTimeInterval;
                 if(avgToCrossingDis == 0 || avgTimeInterval ==0)
                     continue;
