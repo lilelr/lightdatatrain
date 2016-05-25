@@ -1,12 +1,18 @@
 package FileAnalysis;
 
+import StopJudge.Bus;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
 
+
 public class Nihe {
+
+	private Bus bus;
+	private Util util;
 	private ArrayList<disandtime> arrayData=new ArrayList<disandtime>();
 	private  ArrayList<String > array=null;
 	private double A=0;

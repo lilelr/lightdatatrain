@@ -13,10 +13,16 @@ import java.util.HashMap;
  * 根据lightData_Stopmid 计算距离标志和两次停车的平均时间间隔
  */
 public class CaculatePT {
+    private Bus bus;
+    private static Constant constant;
+
+    private void testbus(Constant constant){
+         System.out.println(Constant.AllDaysAccuracyCSV);
+    }
 
     public static void main(String[] args){
 
-        statistic(Constant.StopMidDataPath,Constant.SecondStopDataPath);
+        statistic(Constant.StopMidDataPath, Constant.SecondStopDataPath);
         System.out.println("SecondStopData Success");
     }
 

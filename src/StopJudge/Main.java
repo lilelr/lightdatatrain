@@ -24,7 +24,7 @@ public class Main {
 	}
 
     /**
-     * 根据源数据lightdata生成中间处理结果lightData_mid
+     * 根据源数据lightdata生成中间处理结果lightData_mid 和 lightData_Stop
      */
 	public static void main2()// jisuan honglvdeng fujing de tingche xingwei
 	{
