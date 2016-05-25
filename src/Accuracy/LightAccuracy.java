@@ -227,6 +227,7 @@ public class LightAccuracy {
             FileWriter compareTestCSV = new FileWriter("/Users/yuxiao/项目/毕设/文件/2016/测试/CompareTest.csv");
             File pTTestCSV = new File("/Users/yuxiao/项目/毕设/文件/2016/测试/PTtest.csv");
             FileWriter ptTestWriter = new FileWriter(pTTestCSV);
+            HashMap<String,String> resultOfCompareCSV = new HashMap<>();
 
             //key为lightId,value 为这个路口的数据集合
             HashMap<String, ArrayList<File>> map = new HashMap<String, ArrayList<File>>();
@@ -328,8 +329,10 @@ public class LightAccuracy {
                                         // 拥有相同的红绿灯号和停车时间,准确度提高的提取到结果map中 红绿灯号时间段,实际停车延误,原有系统预测延误,改进后系统预测延误
                                         String originRateAndDelay = accuracyImpMap.get(tmpKey);
                                         String[] originRateAndDelayItem = originRateAndDelay.split(",");
-                                        if (tempRate > Double.valueOf(originRateAndDelayItem[0])){
-                                            accuracyImpMap.replace(tmpKey,originRateAndDelayItem[1]+","+forcastDelayTime);
+                                        double originAccuracy =  Double.valueOf(originRateAndDelayItem[0]);
+                                        if (tempRate > originAccuracy && originAccuracy > 0.5 && tempRate >0.5){
+                                            // 目前筛选准确度大于0.5的
+                                            resultOfCompareCSV.put(tmpKey,originRateAndDelayItem[1]+","+forcastDelayTime);
                                         }
                                     }
                                 } else {
@@ -367,9 +370,11 @@ public class LightAccuracy {
             ptTestWriter.close();
             fw.close();
 
-            for(Map.Entry<String,String> entry: accuracyImpMap.entrySet()){
+            for(Map.Entry<String,String> entry: resultOfCompareCSV.entrySet()){
                 compareTestCSV.write(entry.getKey()+","+entry.getValue()+"\n");
             }
+            resultOfCompareCSV.clear();
+            accuracyImpMap.clear();
             compareTestCSV.close();
         } catch (Exception e) {
             e.printStackTrace();
